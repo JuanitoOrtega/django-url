@@ -1,5 +1,8 @@
+from django.conf import settings
 from django.db import models
 from .utils import code_generator, create_shortcode
+
+SHORTCODE_MAX = getattr(settings, "SHORTCODE_MAX", 15)
 
 
 class ShortURLManager(models.Manager):
@@ -7,7 +10,7 @@ class ShortURLManager(models.Manager):
         qs = super().all(*args, **kwargs)
         qs = qs.filter(active=True)
         return qs
-    
+
     def refresh_shortcodes(self, items=None):
         # print(items)
         qs = ShortURL.objects.filter(id__gte=1)
@@ -25,7 +28,7 @@ class ShortURLManager(models.Manager):
 # Create your models here.
 class ShortURL(models.Model):
     url = models.CharField(max_length=220, verbose_name='URL')
-    shortcode = models.CharField(max_length=15, unique=True, blank=True, verbose_name='Shortcode')
+    shortcode = models.CharField(max_length=SHORTCODE_MAX, unique=True, blank=True, verbose_name='Shortcode')
     updated_at = models.DateTimeField(auto_now=True) # Cada vez que el modelo es guardado
     created_at = models.DateTimeField(auto_now_add=True) # Cuando se crea el modelo
     active = models.BooleanField(default=True)
@@ -36,7 +39,7 @@ class ShortURL(models.Model):
     class Meta:
         verbose_name = 'URL'
         verbose_name_plural = 'URLs'
-    
+
     def save(self, *args, **kwargs):
         # print('Saved something')
         if not self.shortcode:
